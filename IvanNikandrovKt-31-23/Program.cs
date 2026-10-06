@@ -1,4 +1,5 @@
 using IvanIvanovKt_31_20.Database;
+using IvanNikandrovKt_31_23.Extensions;
 using Microsoft.EntityFrameworkCore;
 using NLog;
 using NLog.Web;
@@ -21,6 +22,8 @@ try
     builder.Services.AddDbContext<StudentDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+    // Регистрация сервисов (интерфейсы и их реализации)
+    builder.Services.AddDatabaseServices();
 
     var app = builder.Build();
 
