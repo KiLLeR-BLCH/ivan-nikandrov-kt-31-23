@@ -19,13 +19,17 @@ namespace IvanNikandrovKt_31_23.Interfaces
         Task<ServiceResult<GradeDto>> AddGradeAsync(AddGradeRequest request, CancellationToken ct = default);
 
         Task<ServiceResult<GradeDto>> UpdateGradeAsync(int gradeId, UpdateGradeRequest request, CancellationToken ct = default);
+
+        /// <summary>Дисциплины, по которым студенты введенной группы получили оценку "2".</summary>
+        Task<ServiceResult<DisciplinesWithGrade2Dto>> GetDisciplinesWithGrade2Async(DisciplinesWithGrade2Filter filter, CancellationToken ct = default);
     }
 
     public class GradeService : IGradeService
     {
-        // Шкала оценок. Если в вашем задании другая - поменять нужно только эти две константы
         private const int MinGrade = 2;
         private const int MaxGrade = 5;
+
+        private const int Grade2 = 2;
 
         private readonly StudentDbContext _db;
 
@@ -148,6 +152,29 @@ namespace IvanNikandrovKt_31_23.Interfaces
             var average = await query.AverageAsync(g => (double?)g.Value, ct);
 
             return new AverageGradeDto(average.HasValue ? Math.Round(average.Value, 2) : null, count);
+        }
+
+        public async Task<ServiceResult<DisciplinesWithGrade2Dto>> GetDisciplinesWithGrade2Async(DisciplinesWithGrade2Filter filter, CancellationToken ct = default)
+        {
+            var groupName = filter.GroupName?.Trim();
+            if (string.IsNullOrWhiteSpace(groupName))
+                return ServiceResult<DisciplinesWithGrade2Dto>.Invalid("Название группы обязательно");
+
+            if (!await _db.Groups.AnyAsync(g => g.Name == groupName && !g.IsDeleted, ct))
+                return ServiceResult<DisciplinesWithGrade2Dto>.NotFound("Группа не найдена");
+
+            var names = await _db.Grades.AsNoTracking()
+                .Where(g => g.Value == Grade2
+                            && g.Student!.Group!.Name == groupName
+                            && !g.Student!.IsDeleted
+                            && !g.Student!.Group!.IsDeleted
+                            && !g.Discipline!.IsDeleted)
+                .Select(g => g.Discipline!.Name)
+                .Distinct()
+                .OrderBy(name => name)
+                .ToListAsync(ct);
+
+            return ServiceResult<DisciplinesWithGrade2Dto>.Ok(new DisciplinesWithGrade2Dto(groupName, string.Join(", ", names)));
         }
     }
 }

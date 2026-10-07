@@ -36,6 +36,13 @@ namespace IvanNikandrovKt_31_23.Controllers
             return ToResult(await _gradeService.GetYearAverageAsync(filter, ct));
         }
 
+        /// <summary>Дисциплины, по которым студенты введенной группы получили оценку "2".</summary>
+        [HttpPost("disciplines-with-grade-2")]
+        public async Task<IActionResult> GetFailedDisciplines([FromBody] DisciplinesWithGrade2Filter filter, CancellationToken ct)
+        {
+            return ToResult(await _gradeService.GetDisciplinesWithGrade2Async(filter, ct));
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddGrade([FromBody] AddGradeRequest request, CancellationToken ct)
         {

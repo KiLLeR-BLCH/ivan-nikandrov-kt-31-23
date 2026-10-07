@@ -21,6 +21,12 @@ namespace IvanNikandrovKt_31_23.Dto
         public int? DisciplineId { get; set; }
     }
 
+    /// <summary>Дисциплины, по которым студенты введенной группы получили оценку "2".</summary>
+    public class DisciplinesWithGrade2Filter
+    {
+        public string? GroupName { get; set; }
+    }
+
     /// <summary>Добавление оценки студенту.</summary>
     public class AddGradeRequest
     {
@@ -41,4 +47,6 @@ namespace IvanNikandrovKt_31_23.Dto
 
     /// <summary>Average = null, если подходящих оценок нет.</summary>
     public record AverageGradeDto(double? Average, int GradesCount);
+
+    public record DisciplinesWithGrade2Dto(string GroupName, string Disciplines);
 }
